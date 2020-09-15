@@ -47,6 +47,36 @@ exports.isExistsByPhone = phone =>
         }
     })
 
+exports.findByUsernameAndPassword = (username, password) =>
+    new Promise(async (resolve, reject) => {
+        try {
+            let response = await conn.query(`SELECT * FROM tbl_userLocal WHERE username='${username}' AND password='${password}'`, (err, result) => {
+                if (err) reject(err)
+
+                // console.log('result', result)
+                resolve(result)
+            })
+            // console.log('response', response)
+        } catch (error) {
+            reject(error)
+        }
+    })
+
+exports.updateUserLogin = ({ id, isLoggedIn, userSessionId }) =>
+    new Promise(async (resolve, reject) => {
+        try {
+            let response = await conn.query(`UPDATE tbl_userLocal SET isLoggedIn='${isLoggedIn}', userSessionId='${userSessionId}', lastActive=NOW() WHERE id='${id}'`, (err, result) => {
+                if (err) throw (err)
+
+                console.log('result', result)
+                resolve(result)
+            })
+            console.log('response', response)
+        } catch (error) {
+            throw(error)
+        }
+    })
+    
 exports.register = ({ id, firstname, lastname, email, phone, address, zipCode, userLocalId }) => 
     new Promise(async (resolve, reject) => {
         try {
