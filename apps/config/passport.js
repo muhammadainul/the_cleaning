@@ -5,6 +5,7 @@ const localStrategy = require('passport-local').Strategy
 const passportJWT = require('passport-jwt')
 const JWTStrategy = passportJWT.Strategy
 const ExtractJWT = passportJWT.ExtractJwt
+const bcrypt = require('bcryptjs')
 
 module.exports = function (passport) {
 
@@ -30,10 +31,11 @@ module.exports = function (passport) {
             throw error
         }
     })
-
-    passport.use('login', new localStrategy( async (username, password, done) => {
+    
+    // let passwordValid = bcrypt.compareSync(password)
+    passport.use('login', new localStrategy( async (email, password, done) => {
         try {
-            let user = await conn.query(`SELECT * FROM tbl_userLocal WHERE username='${username}' AND password='${password}'`, (err, result) => {
+            let user = await conn.query(`SELECT * FROM tbl_userLocal WHERE email='${email}' AND password='${password}'`, (err, result) => {
                 if (err) return err
 
                 if (!isEmpty(result)) {

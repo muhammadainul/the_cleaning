@@ -13,17 +13,19 @@ const cookieParser = require('cookie-parser')
 const app = express()
 const http = require('http')		
 const conn = require('./apps/config/db.config')
+const multer = require('multer')
 const myConfig = require('./apps/config/config')
 const routes = require('./apps/routes/index')
 const basepath = 'apps'
-const corsOptions = {
-    origin: "http://localhost:3001"
-};
+// const corsOptions = {
+//     origin: "http://localhost:3001"
+// };
 
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }))
 app.use(cookieParser())
+app.use(express.static((__dirname, '/public')));
 
 require("./apps/config/passport")(passport)
 app.use(passport.initialize())
@@ -31,7 +33,7 @@ app.use(passport.session())
 app.use('/', routes)
 
 global.myConfig = {}
-
+global.__basedir = __dirname
 app.use((req, res, next) => {
 	res.header("Access-Control-Allow-Origin", "*")
 	res.header(

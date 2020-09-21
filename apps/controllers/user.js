@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const salt = bcrypt.genSaltSync(10)
 const Puid = require('puid')
+const crypto = require('crypto')
+const nodemailer = require('nodemailer')
 const { validationResult } = require('express-validator')
 const User = require('../queries/user')
 const Session = require('../queries/session')
@@ -34,37 +36,98 @@ async function register (req, res, next){
 
         let uniqid
         uniqid = new Puid()
+
+        let token = {
+            id: uniqid.generate(),
+            tokenCode: crypto.randomBytes(50).toString('hex')
+        }
+
+        let createTokenCode = await User.createTokenCode(token)
+        console.log('createTokenCode', createTokenCode)
+
+        let encryptedPassword = bcrypt.hashSync(data.password, salt)
+        let userLocal = {
+            id: uniqid.generate(),
+            email: data.email,
+            username: data.username,
+            password: encryptedPassword,
+            role: 'user',
+            isVerified: false,
+            userTokenId: token.id
+        }
+        let createUserLocal = await User.addUserLocal(userLocal)
+        console.log('userLocal', createUserLocal)
+
         let newCustomer = {
             id: uniqid.generate(),
             firstname: data.firstname,
             lastname: data.lastname,
-            email: data.email,
             phone: data.phone,
             address: data.address,
             zipCode: data.zipCode,
-            userLocalId: uniqid.generate(),
+            userLocalId: userLocal.id
         }
 
         let result = await User.register(newCustomer)
         console.log('result', result)
-        
-        let encryptedPassword = bcrypt.hashSync(data.password, salt)
 
-        let userLocal = {
-            id: newCustomer.userLocalId,
-            username: data.username,
-            password: encryptedPassword,
-            role: 'user',
-            isRegistered: true,
+        let transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            service: 'gmail',
+            auth: {
+                user: "ainulsaya@gmail.com",
+                pass: "17005402"
+            }
+        })
+        console.log('transporter', transporter)
+
+        let mailOptions = {
+            from: "no-reply@the_cleaning.com",
+            to: userLocal.email,
+            subject: "Account Verification Token",
+            text: 
+                "Hallo <b>" + userLocal.username + "</b>, \n\n" +
+                "Please verify your account by click the link: \nhttp:\/\/" +
+                req.headers.host + "\/user\/confirmation\/token\/" +
+                token.tokenCode + "\n" +
+                "If you don't register this, you can ignore this email. Thank you :)"
         }
+        console.log('mailOptions', mailOptions)
+        transporter.sendMail(mailOptions, function (err){
+            if (err) return res.send({ status_code: 500, error: err })
 
-        let createUserLocal = await User.addUserLocal(userLocal)
-        console.log('userLocal', createUserLocal)
+            return res.send({ status_code: 200, message: "Verification email has been send to " + userLocal.email + "." })
+        })
 
-        return res.send({ status_code: 200, message: 'Register account success!', data: createUserLocal })
+        // return res.send({ status_code: 200, message: 'Register account success!', data: createUserLocal })
     } catch (error) {
         return res.send({ status_code: 400, message: 'Register failed! please try again.', error })
         // throw error
+    }
+}
+
+async function confirmVerification (req, res, next) {
+    let param = req.params
+    console.log('[TheCleaning] params', { param })
+    try {
+        let tokenCode = param.tokencode
+        console.log('tokenCode', tokenCode)
+        let checkToken = await User.findToken({ tokenCode })
+        console.log('checkToken', checkToken)
+        if (isEmpty(checkToken)) return res.send({ status_code: 400, message: 'We were unable to find a valid token. Your token might be expired.'})
+        
+        if (checkToken.isVerified) return res.send({ status_code: 400, message: 'This user has been already verified.' })
+
+        let userTokenId = checkToken[0].userTokenId    
+        let isVerified = true
+        let result = await User.verifiedUser({ userTokenId, isVerified })
+        console.log('result', result)
+
+        return res.send({ status_code: 200, message: 'Your account has been verified. Please login' })
+    } catch (error) {
+        throw error
     }
 }
 
@@ -72,69 +135,149 @@ async function login (req, res, next) {
     let data = req.body
     console.log('[TheCleaning] login', data)
     try {
-        // let { username, password } = req.body
-        // const userFound = await User.findByUsernameAndPassword(username, password)
-        // console.log('userfound', userFound)
-        // if (isEmpty(userFound)) return res.send({ status_code: 400, message: "User not found! Please try again." })
+        let { email, password } = req.body
 
-        passport.authenticate("login", (err, user) => {
-            if (err) return next(err)
-            if (!user) return res.send({ status_code: 400, message: "User not found! Please try again." })
-            req.logIn(user, err => {
-                if (err) return next(err)
-                
-                const createAccessToken = jwt.sign({ id: user[0].id, password: user[0].password }, myConfig.sessionSecret, { expiresIn: myConfig.expiredSessionTime })
-                const createRefreshToken = jwt.sign({ id: user[0].id, password: user[0].password }, myConfig.refreshSessionSecret, { expiresIn: myConfig.expiredRefreshSessionTime })
-                console.log('accessToken', createAccessToken)
-                console.log('refreshAccessToken', createRefreshToken)
+        const userFound = await User.findByEmail(email)
+        console.log('userfound', userFound)
+        if (isEmpty(userFound)) return res.send({ status_code: 400, message: "User not found! Please try again." })
 
-                let uniqid
-                uniqid = new Puid()
+        let passwordValid = bcrypt.compare(password, userFound[0].password, function (err, result){
+            if (err) throw err
 
-                let updateUser = {
-                    id: user[0].id,
-                    isLoggedIn: true,
-                    userSessionId: uniqid.generate()
-                } 
+            console.log('result', result)
+            if (!result) return res.send({ status_code: 400, message: "Invalid password! Please try again." })
 
-                console.log('id', user[0].id)
-        
-                let updateUserLocal = User.updateUserLogin(updateUser)
-                console.log('[TheCleaning] updateUserLocal', updateUserLocal)
+            console.log('email', userFound[0].email)
+            const createAccessToken = jwt.sign({ id: userFound[0].id, email: userFound[0].email }, myConfig.sessionSecret, { expiresIn: myConfig.expiredSessionTime })
+            const createRefreshToken = jwt.sign({ id: userFound[0].id, email: userFound[0].email }, myConfig.refreshSessionSecret, { expiresIn: myConfig.expiredRefreshSessionTime })
+            console.log('accessToken', createAccessToken)
+            console.log('refreshAccessToken', createRefreshToken)
 
-                const makeSession = {
-                    id: updateUser.userSessionId,
-                    accessToken: createAccessToken,
-                    refreshToken: createRefreshToken
-                }
+            let uniqid
+            uniqid = new Puid()
 
-                const existingSession = Session.findBySessionId(makeSession.id)
-                console.log('existinSession', existingSession)
-                if (isEmpty(existingSession)) {
-                    const newSession = Session.updateBySessionId(makeSession)
-                    console.log('updateSession', newSession)
-                } else {
-                    const newSession = Session.createSession(makeSession)
-                    console.log('newSession', newSession)
-                }
+            const makeSession = {
+                id: uniqid.generate(),
+                accessToken: createAccessToken,
+                refreshToken: createRefreshToken
+            }
 
-                return res.send({
-                    status_code: 200, 
-                    message: "Login Success.", 
-                    accessToken: createAccessToken,
-                    refreshToken: createRefreshToken,
-                    data: user 
-                })
+            const existingSession = Session.findBySessionId(makeSession.id)
+            console.log('existinSession', existingSession)
+            if (isEmpty(existingSession)) {
+                const newSession = Session.createSession(makeSession)
+                // console.log('newSession', newSession) 
+                console.log('newSession', newSession)
+            } else {
+                const newSession = Session.updateBySessionId(makeSession)
+                console.log('updateSession', newSession)
+            }
+
+            let updateUser = {
+                id: userFound[0].userLocalId,
+                isLoggedIn: true,
+                userSessionId: makeSession.id
+            } 
+
+            console.log('id', userFound[0].id)
+
+            let updateUserLocal = User.updateUserLogin(updateUser)
+            console.log('[TheCleaning] updateUserLocal', updateUserLocal)
+
+            return res.send({
+                status_code: 200, 
+                message: "Login Success.", 
+                accessToken: createAccessToken,
+                refreshToken: createRefreshToken,
+                data: userFound 
             })
-        })(req, res, next)
+        })
     } catch (error) {
-        next(error)
+        throw (error)
     }
 }
 
-// async function logout (req, res, next) {
-    
-// }
+async function logout (req, res, next) {
+    const { logout } = req.body
+    const user = req.user
+    console.log('logout', logout)
+    try {
+        const userAccount = await User.findByEmail(user.email)
+        if (isEmpty(userAccount)) return res.send({ status_code: 400, message: "User not found." })
+
+        const foundSession = await Session.findBySessionId({ id: userAccount[0].userSessionId })
+        if (isEmpty(foundSession)) return res.send({ status_code: 400, message: "Session not found" })
+
+        const deleteSession = await Session.deleteBySessionId({ id: foundSession[0].id })
+        console.log('deleteSession', deleteSession)
+
+        let toUpdate = {
+            id: userAccount[0].userLocalId,
+            isLoggedIn: false,
+        }
+        const isLoggedIn = await User.updateUser(toUpdate)
+        console.log('isLoggedIn', isLoggedIn
+        )
+        req.logout()
+        return res.send({ status_code: 200, data: {
+            logout: true
+        }})
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function editProfile (req, res, next) {
+    let data = req.body
+
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) return res.send({ status_code: 400, message: "Not a valid input!", error: errors })
+    console.log('[TheCleaning] editProfile', data)
+    try {
+        const user = req.user
+        let {
+            id,
+            firstname,
+            lastname,
+            phone,
+            address,
+            zipCode,
+            username,
+            email,
+            password,
+            repassword
+        } = req.body
+
+        console.log('user', user)
+        const exists = await User.findById({ id })
+        if (isEmpty(exists)) return res.send({ status_code: 404, message: 'User not found.' })
+        if (exists[0].id !== user.id) return res.send({ status_code: 400, message: 'Not your account.' }) 
+
+        const updateCustomer = await User.updateById({ 
+            id,
+            firstname,
+            lastname,
+            phone,
+            address,
+            zipCode
+        })
+        console.log('updateCustomer', updateCustomer)
+
+        const userLocalId = exists[0].userLocalId
+        const encryptedPassword = bcrypt.hashSync(password, salt)
+        const updateUserLocal = await User.updateUserLocal({ 
+            userLocalId,
+            username,
+            email,
+            encryptedPassword 
+        })
+        console.log('updateUserLocal', updateUserLocal)
+
+        return res.send({ status_code: 200, data: updateCustomer })
+    } catch (error) {
+        throw error
+    }
+}
 
 async function getAllCustomer (req, res, next) {
     try {
@@ -150,5 +293,8 @@ async function getAllCustomer (req, res, next) {
 module.exports = {
     register,
     login,
+    logout,
+    editProfile,
+    confirmVerification,
     getAllCustomer        
 }
