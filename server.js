@@ -27,6 +27,15 @@ app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }))
 app.use(cookieParser())
 app.use(express.static((__dirname, '/public')));
 
+// global.storage = multer.diskStorage({
+// 	destination: (req, file, cb) => {
+// 	  cb(null,  "uploads/image")
+// 	},
+// 	filename: (req, file, cb) => {
+// 	  cb(null, `${file.originalname}`);
+// 	},
+//   });
+
 require("./apps/config/passport")(passport)
 app.use(passport.initialize())
 app.use(passport.session())

@@ -8,7 +8,7 @@ const isSecured = async (req, res, next) => {
     passport.authenticate('jwt', (err, user, info) => {
         console.log('err, user', { err, user, info })
         if (err) return res.send(err)
-        if (!user) return res.send({ status_code: 570, message: "Unauthorized access.", error: err })
+        if (!user) return res.send({ status_code: 570, message: "Unauthorized access.", error: info })
         req.logIn(user, { session: false }, err => {
             if (err) return res.send(err)
             

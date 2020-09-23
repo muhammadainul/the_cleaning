@@ -52,10 +52,10 @@ exports.findByEmail = email  =>
     new Promise(async (resolve, reject) => {
         try {
             let response = await conn.query(`SELECT tbl_userLocal.email, tbl_userLocal.username, tbl_userLocal.password, tbl_userLocal.role,
-                tbl_userLocal.isLoggedIn, tbl_userLocal.userSessionId, tbl_customer.firstname, tbl_customer.lastname, tbl_customer.phone, tbl_customer.address, 
+                tbl_userLocal.isVerified, tbl_userLocal.isLoggedIn, tbl_userLocal.userSessionId, tbl_customer.firstname, tbl_customer.lastname, tbl_customer.phone, tbl_customer.address, 
                 tbl_customer.zipCode, tbl_customer.userLocalId, tbl_userSession.accessToken, tbl_userSession.refreshToken FROM tbl_userLocal INNER JOIN tbl_customer
                 ON tbl_customer.userLocalid=tbl_userLocal.id
-                LEFT JOIN tbl_userSession ON tbl_userSession.id=tbl_userLocal.userSessionId AND tbl_userLocal.email='${email}'`, (err, result) => {
+                LEFT JOIN tbl_userSession ON tbl_userSession.id=tbl_userLocal.userSessionId WHERE tbl_userLocal.email='${email}'`, (err, result) => {
                 if (err) throw err
 
                 console.log('result', result)
@@ -193,7 +193,7 @@ exports.createTokenCode = ({ id, tokenCode }) =>
 exports.findToken = ({ tokenCode }) => 
     new Promise(async (resolve, reject) => {
         try {
-            let response = await conn.query(`SELECT * FROM tbl_userToken INNER JOIN tbl_userLocal ON tbl_userToken.id=tbl_userLocal.userTokenId AND tbl_userToken.tokenCode='${tokenCode}'`, 
+            let response = await conn.query(`SELECT * FROM tbl_userToken INNER JOIN tbl_userLocal ON tbl_userToken.id=tbl_userLocal.userTokenId WHERE tbl_userToken.tokenCode='${tokenCode}'`, 
                     (err, result) => {
                         if (err) throw err
 
