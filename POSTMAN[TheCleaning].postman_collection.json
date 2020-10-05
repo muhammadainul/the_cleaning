@@ -1,0 +1,477 @@
+{
+	"info": {
+		"_postman_id": "9bce4dea-9619-4062-92c2-bf493c182ea6",
+		"name": "POSTMAN[TheCleaning]",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://api.inkustudio.com/admin/getAllPriceList",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFpbnVsc2F5YUBnbWFpbC5jb20iLCJpYXQiOjE2MDA5MzE4MDIsImV4cCI6MTYwMDkzNTQwMn0.-nwO8hgGq_pAChZwSNyK1NOkQ9Kc5sWs4jn0f0A96QM",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://api.inkustudio.com/admin/getAllPriceList",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"admin",
+						"getAllPriceList"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/admin/addPriceList",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFpbnVsc2F5YUBnbWFpbC5jb20iLCJpYXQiOjE2MDA4Nzk0ODYsImV4cCI6MTYwMDg4MzA4Nn0.kMn8JWPuWXWvXOZYv0Yf5Tt6uVFAPqrbS8ieeVpaEC4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"priceName\": \"Springbed\",\n    \"priceDesc\": \"Jasa bersih-bersih kasur springbed\",\n    \"price\": 100000,\n    \"duration\": 2\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/admin/addPriceList",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"admin",
+						"addPriceList"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/user/login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"ainulsaya@gmail.com\",\n    \"password\": \"ainulyaqin\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/user/login",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"user",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/admin/editEmployee",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "id",
+							"value": "kfdsec230p25e4a895conesu",
+							"type": "text"
+						},
+						{
+							"key": "firstname",
+							"value": "Tarjo",
+							"type": "text"
+						},
+						{
+							"key": "lastname",
+							"value": "Sukamandi",
+							"type": "text"
+						},
+						{
+							"key": "phone",
+							"value": "089715263711",
+							"type": "text"
+						},
+						{
+							"key": "address",
+							"value": "Komplek depag",
+							"type": "text"
+						},
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/ainulyaqin/Pictures/hqdefault.jpg"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/admin/editEmployee",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"admin",
+						"editEmployee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:3001/user/getAll",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-length": true,
+					"host": true,
+					"user-agent": true,
+					"accept": true,
+					"accept-encoding": true,
+					"connection": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImtmOGlkM3U5MDU2YWU0YTg5NTlpdm1qZyIsImVtYWlsIjoiYWludWxzYXlhQGdtYWlsLmNvbSIsImlhdCI6MTYwMDQ1MzYxNywiZXhwIjoxNjAwNDU3MjE3fQ.Qka07T5iiwg-00brvQl-JNT0L7NeiJqqUHsHhbaCuoY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MDAwOTkzNTcsImV4cCI6MTYwMDE4NTc1N30.Xcp8q0a6VwINqdNFeZzI1-bb5j9n0cc1EnGF_BmQEMw",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://api.inkustudio.com/user/getAll",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"user",
+						"getAll"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:3001/user/register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"firstname\": \"Apri\",\n    \"lastname\": \"Lianti\",\n    \"email\": \"aprilianti154@gmail.com\",\n    \"phone\": \"0895364319737\",\n    \"address\": \"Manggar\",\n    \"zipCode\": \"1234\",\n    \"username\": \"aprilianti\",\n    \"password\": \"rahasiaapril\",\n    \"repassword\": \"rahasiaapril\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/user/register",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"user",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/user/logout",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFpbnVsc2F5YUBnbWFpbC5jb20iLCJpYXQiOjE2MDA4Nzk0ODYsImV4cCI6MTYwMDg4MzA4Nn0.kMn8JWPuWXWvXOZYv0Yf5Tt6uVFAPqrbS8ieeVpaEC4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"logout\": \"logout\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/user/logout",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"user",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/admin/deleteEmployee",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"idnya\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/admin/deleteEmployee",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"admin",
+						"deleteEmployee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/admin/editPriceList",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"idnya berapa?\",\n    \"priceName\": \"Springbed\",\n    \"priceDesc\": \"Jasa bersih-bersih kasur springbed\",\n    \"price\": 100000,\n    \"duration\": 2\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/admin/editPriceList",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"admin",
+						"editPriceList"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/admin/addEmployee",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "firstname",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "lastname",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "phone",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "address",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "file",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/admin/addEmployee",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"admin",
+						"addEmployee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/admin/getAllEmployee",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://api.inkustudio.com/admin/getAllEmployee",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"admin",
+						"getAllEmployee"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/user/update",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"idnya brapa\",\n    \"firstname\": \"\",\n    \"lastname\": \"\",\n    \"phone\": \"\",\n    \"address\": \"\",\n    \"zipCode\": \"\",\n    \"username\": \"\",\n    \"email\": \"\",\n    \"password\": \"\",\n    \"repassword\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/user/update",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"user",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://api.inkustudio.com/admin/deletePriceList",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"idnya brapa?\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://api.inkustudio.com/admin/deletePriceList",
+					"protocol": "http",
+					"host": [
+						"api",
+						"inkustudio",
+						"com"
+					],
+					"path": [
+						"admin",
+						"deletePriceList"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

@@ -24,8 +24,13 @@ exports.findBySessionId = ({ id }) =>
             let response = await conn.query(`SELECT * FROM tbl_userSession WHERE id='${id}'`, (err, result) => {
                         if (err) throw err
 
-                        console.log('result', result)
-                        resolve(result)
+                        if (isEmpty(result)) resolve(result)
+                        
+                        Object.keys(result).forEach(function(key){
+                            const row = result[key]
+                            console.log('row', row)
+                            resolve(row)
+                        })
                     })
             console.log('response', response)
         } catch (error) {

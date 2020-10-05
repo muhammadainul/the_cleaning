@@ -1,6 +1,6 @@
 'use strict'
 
-const { result, reject } = require('lodash')
+const { result, reject, isEmpty } = require('lodash')
 const _ = require('lodash')
 
 exports.isExistsByName = priceName =>
@@ -9,8 +9,13 @@ exports.isExistsByName = priceName =>
             let response = await conn.query(`SELECT * FROM tbl_priceList WHERE priceName='${priceName}'`, (err, result) => {
                 if (err) throw err
 
-                console.log(result)
-                resolve(result)
+                if (isEmpty(result)) resolve(result)
+
+                Object.keys(result).forEach(function(key){
+                   const row = result[key]
+                   console.log('row', row)
+                   resolve(row)
+               })
             })
             console.log('response', response)
         } catch (error) {
@@ -85,9 +90,15 @@ exports.findAll = () =>
         try {
             let response = await conn.query(`SELECT id, priceName, priceDesc, price, duration, createdAt, updatedAt FROM tbl_priceList`, (err, result) => {
                 if (err) throw err
-
-                console.log(result)
-                resolve(result)
+                
+                if (isEmpty(result)) resolve(result)
+                
+                Object.keys(result).forEach(function(key){
+                    const row = result[key]
+                    console.log('row', row)
+                    resolve(result)
+                })
+                // console.log(result)
             })
             console.log('response', response)
         } catch (error) {

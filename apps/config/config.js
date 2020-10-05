@@ -4,7 +4,7 @@ module.exports = {
     myConfig: {
         sessionSecret: "topSecret!",
         refreshSessionSecret: "topSecret!",
-        expiredSessionTime: "1h",
-        expiredRefreshSessionTime: "1h"
+        expiredSessionTime: "3h",
+        expiredRefreshSessionTime: "3h"
     }
 }

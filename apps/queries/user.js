@@ -1,14 +1,13 @@
 'use strict'
 
-const { reject } = require('lodash')
-const _ = require('lodash')
+const { isEmpty } = require('lodash')
 
 exports.isExistsByUsername = username =>
     new Promise(async (resolve, reject) => {
         try {
             let response = await conn.query(`SELECT * FROM tbl_userLocal WHERE username='${username}'`, (err, result) => {
                 if (err) reject(err)
-                console.log('err', err)
+
                 console.log('results', result)
                 resolve(result)
             })
@@ -52,14 +51,19 @@ exports.findByEmail = email  =>
     new Promise(async (resolve, reject) => {
         try {
             let response = await conn.query(`SELECT tbl_userLocal.email, tbl_userLocal.username, tbl_userLocal.password, tbl_userLocal.role,
-                tbl_userLocal.isVerified, tbl_userLocal.isLoggedIn, tbl_userLocal.userSessionId, tbl_customer.firstname, tbl_customer.lastname, tbl_customer.phone, tbl_customer.address, 
+                tbl_userLocal.isVerified, tbl_userLocal.isLoggedIn, tbl_userLocal.userSessionId, tbl_customer.id, tbl_customer.firstname, tbl_customer.lastname, tbl_customer.phone, tbl_customer.address, 
                 tbl_customer.zipCode, tbl_customer.userLocalId, tbl_userSession.accessToken, tbl_userSession.refreshToken FROM tbl_userLocal INNER JOIN tbl_customer
                 ON tbl_customer.userLocalid=tbl_userLocal.id
                 LEFT JOIN tbl_userSession ON tbl_userSession.id=tbl_userLocal.userSessionId WHERE tbl_userLocal.email='${email}'`, (err, result) => {
                 if (err) throw err
+                
+                if (isEmpty(result)) resolve(result)
 
-                console.log('result', result)
-                resolve(result)
+                Object.keys(result).forEach(function(key){
+                    const row = result[key]
+                    console.log('row', row)
+                    resolve(row)
+                })
             })
             console.log('response', response)
         } catch (error) {
@@ -73,14 +77,20 @@ exports.findById = ({ id }) =>
             let response = await conn.query(`SELECT * FROM tbl_customer WHERE id='${id}'`, (err, result) => {
                 if (err) throw err
                 
-                console.log('result', result)
-                resolve(result)
+                if (isEmpty(result)) resolve(result)
+
+                Object.keys(result).forEach(function(key){
+                    const row = result[key]
+                    console.log('row', row)
+                    resolve(row)
+                })
             })
             console.log('response', response)
         } catch (error) {
             throw error
         }
     })
+
 exports.updateById = ({ id, firstname, lastname, phone, address, zipCode }) =>
     new Promise(async (resolve, reject) => {
         try {
@@ -197,8 +207,13 @@ exports.findToken = ({ tokenCode }) =>
                     (err, result) => {
                         if (err) throw err
 
-                        console.log('result', result)
-                        resolve(result)
+                        if (isEmpty(result)) resolve(result)
+                        
+                        Object.keys(result).forEach(function(key){
+                            const row = result[key]
+                            console.log('row', row)
+                            resolve(row)
+                        })
                     })
             console.log('response', response)
         } catch (error) {

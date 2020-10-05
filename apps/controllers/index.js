@@ -12,13 +12,14 @@ const nodemailer = require('nodemailer')
 const { validationResult } = require('express-validator')
 const User = require('../queries/user')
 const Session = require('../queries/session')
+const Token = require('../queries/token')
 const { myConfig } = require('../config/config')
 
 async function register (req, res, next){
     let data = req.body
 
     const errors = validationResult(req)
-    if (!errors.isEmpty()) return res.send({ status_code: 400, message: "Not a valid input!", error: errors })
+    if (!errors.isEmpty()) return res.send({ statusCode: 400, message: "Not a valid input!", error: errors })
 
     console.log('body', data)
     try {
@@ -26,13 +27,13 @@ async function register (req, res, next){
         let { username, email, phone } = req.body
 
         const checkUsername = await User.isExistsByUsername(username)
-        if (!isEmpty(checkUsername)) return res.send({ status_code: 400, message: "Username already used." })
+        if (!isEmpty(checkUsername)) return res.send({ statusCode: 400, message: "Username already used." })
 
         const checkEmail = await User.isExistsByEmail(email)
-        if (!isEmpty(checkEmail)) return res.send({ status_code: 400, message: "Email already used." })
+        if (!isEmpty(checkEmail)) return res.send({ statusCode: 400, message: "Email already used." })
 
         const checkPhone = await User.isExistsByPhone(phone)
-        if (!isEmpty(checkPhone)) return res.send({ status_code: 400, message: "Phone already used." })
+        if (!isEmpty(checkPhone)) return res.send({ statusCode: 400, message: "Phone already used." })
 
         let uniqid
         uniqid = new Puid()
@@ -51,8 +52,8 @@ async function register (req, res, next){
             email: data.email,
             username: data.username,
             password: encryptedPassword,
-            role: 'admin',
-            isVerified: false,
+            role: 'user',
+            isVerified: 0,
             userTokenId: token.id
         }
         let createUserLocal = await User.addUserLocal(userLocal)
@@ -96,14 +97,17 @@ async function register (req, res, next){
         }
         console.log('mailOptions', mailOptions)
         transporter.sendMail(mailOptions, function (err){
-            if (err) return res.send({ status_code: 500, error: err })
+            if (err) return res.send({ statusCode: 500, error: err })
 
-            return res.send({ status_code: 200, message: "Verification email has been send to " + userLocal.email + "." })
+            const token = Token.createEvent()
+            console.log('token', token)
+            
+            return res.send({ statusCode: 200, message: "Verification email has been send to " + userLocal.email + "." })
         })
 
-        // return res.send({ status_code: 200, message: 'Register account success!', data: createUserLocal })
+        // return res.send({ statusCode: 200, message: 'Register account success!', data: createUserLocal })
     } catch (error) {
-        return res.send({ status_code: 400, message: 'Register failed! please try again.', error })
+        return res.send({ statusCode: 400, message: 'Register failed! please try again.', error })
         // throw error
     }
 }
@@ -116,19 +120,23 @@ async function confirmVerification (req, res, next) {
         console.log('tokenCode', tokenCode)
         let checkToken = await User.findToken({ tokenCode })
         console.log('checkToken', checkToken)
-        if (isEmpty(checkToken)) return res.send({ status_code: 400, message: 'We were unable to find a valid token. Your token might be expired.'})
+        if (isEmpty(checkToken)) return res.send({ statusCode: 400, message: 'We were unable to find a valid token. Your token might be expired.'})
         
-        if (checkToken.isVerified) return res.send({ status_code: 400, message: 'This user has been already verified.' })
+        if (checkToken.isVerified) return res.send({ statusCode: 400, message: 'This user has been already verified.' })
 
-        let userTokenId = checkToken[0].userTokenId    
-        let isVerified = true
+        let userTokenId = checkToken.userTokenId    
+        let isVerified = 1
         let result = await User.verifiedUser({ userTokenId, isVerified })
         console.log('result', result)
 
-        return res.send({ status_code: 200, message: 'Your account has been verified. Please login' })
+        return res.send({ statusCode: 200, message: 'Your account has been verified. Please login' })
     } catch (error) {
         throw error
     }
+}
+
+async function resendToken (req, res, next) {
+    
 }
 
 async function login (req, res, next) {
@@ -141,17 +149,17 @@ async function login (req, res, next) {
         console.log('userfound', userFound)
         if (isEmpty(userFound)) return res.send({ statusCode: 400, message: "User not found! Please try again." })
 
-        if (!userFound[0].isVerified) return res.send({ statusCode: 400, message: "Your account has not been verified." })
+        if (!userFound.isVerified) return res.send({ statusCode: 400, message: "Your account has not been verified." })
 
-        let passwordValid = bcrypt.compare(password, userFound[0].password, function (err, result){
+        let passwordValid = bcrypt.compare(password, userFound.password, function (err, result){
             if (err) throw err
 
             console.log('result', result)
-            if (!result) return res.send({ status_code: 400, message: "Invalid password! Please try again." })
+            if (!result) return res.send({ statusCode: 400, message: "Invalid password! Please try again." })
 
-            console.log('email', userFound[0].email)
-            const createAccessToken = jwt.sign({ id: userFound[0].id, email: userFound[0].email }, myConfig.sessionSecret, { expiresIn: myConfig.expiredSessionTime })
-            const createRefreshToken = jwt.sign({ id: userFound[0].id, email: userFound[0].email }, myConfig.refreshSessionSecret, { expiresIn: myConfig.expiredRefreshSessionTime })
+            console.log('email', userFound.email)
+            const createAccessToken = jwt.sign({ id: userFound.id, email: userFound.email }, myConfig.sessionSecret, { expiresIn: myConfig.expiredSessionTime })
+            const createRefreshToken = jwt.sign({ id: userFound.id, email: userFound.email }, myConfig.refreshSessionSecret, { expiresIn: myConfig.expiredRefreshSessionTime })
             console.log('accessToken', createAccessToken)
             console.log('refreshAccessToken', createRefreshToken)
 
@@ -175,18 +183,18 @@ async function login (req, res, next) {
             }
 
             let updateUser = {
-                id: userFound[0].userLocalId,
+                id: userFound.userLocalId,
                 isLoggedIn: true,
                 userSessionId: makeSession.id
             } 
 
-            console.log('id', userFound[0].id)
+            console.log('id', userFound.id)
 
             let updateUserLocal = User.updateUserLogin(updateUser)
             console.log('[TheCleaning] updateUserLocal', updateUserLocal)
 
             return res.send({
-                status_code: 200, 
+                statusCode: 200, 
                 message: "Login Success.", 
                 accessToken: createAccessToken,
                 refreshToken: createRefreshToken,
@@ -204,23 +212,23 @@ async function logout (req, res, next) {
     console.log('logout', logout)
     try {
         const userAccount = await User.findByEmail(user.email)
-        if (isEmpty(userAccount)) return res.send({ status_code: 400, message: "User not found." })
+        if (isEmpty(userAccount)) return res.send({ statusCode: 400, message: "User not found." })
 
-        const foundSession = await Session.findBySessionId({ id: userAccount[0].userSessionId })
-        if (isEmpty(foundSession)) return res.send({ status_code: 400, message: "Session not found" })
+        const foundSession = await Session.findBySessionId({ id: userAccount.userSessionId })
+        if (isEmpty(foundSession)) return res.send({ statusCode: 400, message: "Session not found" })
 
-        const deleteSession = await Session.deleteBySessionId({ id: foundSession[0].id })
+        const deleteSession = await Session.deleteBySessionId({ id: foundSession.id })
         console.log('deleteSession', deleteSession)
 
         let toUpdate = {
-            id: userAccount[0].userLocalId,
+            id: userAccount.userLocalId,
             isLoggedIn: false,
         }
         const isLoggedIn = await User.updateUser(toUpdate)
         console.log('isLoggedIn', isLoggedIn
         )
         req.logout()
-        return res.send({ status_code: 200, data: {
+        return res.send({ statusCode: 200, data: {
             logout: true
         }})
     } catch (error) {

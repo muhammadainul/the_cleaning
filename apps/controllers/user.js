@@ -18,7 +18,7 @@ async function editProfile (req, res, next) {
     let data = req.body
 
     const errors = validationResult(req)
-    if (!errors.isEmpty()) return res.send({ status_code: 400, message: "Not a valid input!", error: errors })
+    if (!errors.isEmpty()) return res.send({ statusCode: 400, message: "Not a valid input!", error: errors })
     console.log('[TheCleaning] editProfile', data)
     try {
         const user = req.user
@@ -37,8 +37,8 @@ async function editProfile (req, res, next) {
 
         console.log('user', user)
         const exists = await User.findById({ id })
-        if (isEmpty(exists)) return res.send({ status_code: 404, message: 'User not found.' })
-        if (exists[0].id !== user.id) return res.send({ status_code: 400, message: 'Not your account.' }) 
+        if (isEmpty(exists)) return res.send({ statusCode: 404, message: 'User not found.' })
+        if (exists.id !== user.id) return res.send({ statusCode: 400, message: 'Not your account.' }) 
 
         const updateCustomer = await User.updateById({ 
             id,
@@ -50,7 +50,7 @@ async function editProfile (req, res, next) {
         })
         console.log('updateCustomer', updateCustomer)
 
-        const userLocalId = exists[0].userLocalId
+        const userLocalId = exists.userLocalId
         const encryptedPassword = bcrypt.hashSync(password, salt)
         const updateUserLocal = await User.updateUserLocal({ 
             userLocalId,
@@ -60,7 +60,7 @@ async function editProfile (req, res, next) {
         })
         console.log('updateUserLocal', updateUserLocal)
 
-        return res.send({ status_code: 200, data: updateCustomer })
+        return res.send({ statusCode: 200, data: updateCustomer })
     } catch (error) {
         throw error
     }
@@ -71,7 +71,7 @@ async function getAllCustomer (req, res, next) {
         let result = await User.getDataCustomer()
         console.log('results', result)
         
-        return res.send({ status_code: 200, data: result })
+        return res.send({ statusCode: 200, data: result })
     } catch (error) {
         throw error
     }

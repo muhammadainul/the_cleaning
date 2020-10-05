@@ -158,7 +158,7 @@ function editFile ({ employeeId, type, filename, data }) {
         console.log('makeFile', makeFile)
         throw ({ statusCode: 200, message: 'File edited.'})
     } catch (error) {
-        return error
+        throw error
     }
 }
 
