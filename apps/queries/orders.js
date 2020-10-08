@@ -2,18 +2,19 @@
 
 const { reject, isEmpty } = require("lodash")
 
-exports.create = ({ id, customerId, priceListId, orderDate, orderDuration, totalPrice, orderStatus, notes }) =>
+exports.create = ({ id, customerId, priceListId, orderDate, orderTime, orderDuration, location, totalPrice, orderStatus, notes }) =>
     new Promise(async (resolve, reject) => {
         try {
-            let response = await conn.query(`INSERT INTO tbl_orders(id, customerId, priceListId, orderDate, orderDuration, totalPrice, orderStatus, 
-                    notes) VALUE('${id}', '${customerId}', '${priceListId}', '${orderDate}', '${orderDuration}', '${totalPrice}', '${orderStatus}', 
-                    '${notes}')`, (err, result) => {
-                        if (err) throw err
+            let response = await conn.query(`INSERT INTO tbl_orders(id, customerId, priceListId, orderDate, orderTime, orderDuration, location, totalPrice, orderStatus, 
+                notes) VALUE('${id}', '${customerId}', '${priceListId}', '${orderDate}', '${orderTime}', '${orderDuration}', '${location}', '${totalPrice}', '${orderStatus}', 
+                '${notes}')`, (err, result) => {
+                    if (err) throw err
 
-                        console.log('result', result)
-                        resolve(result)
-                    })
-            console.log('repsonse', response)
+                    console.log('result', result)
+                    resolve(result)
+                })
+        console.log('repsonse', response)
+            
         } catch (error) {
             throw error
         }
@@ -43,7 +44,7 @@ exports.findByCustomerIdDate = ({ customerId, today }) =>
 exports.findById = ({ id, date }) => 
     new Promise(async (resolve, reject) => {
         try {
-            let response = await conn.query(`SELECT tbl_orders.id AS orderId, tbl_orders.orderDate, tbl_orders.orderDuration, tbl_orders.totalPrice, 
+            let response = await conn.query(`SELECT tbl_orders.id AS orderId, tbl_orders.orderDate, tbl_orders.orderTime, tbl_orders.orderDuration, tbl_orders.location, tbl_orders.totalPrice, 
                 tbl_orders.notes, tbl_orders.orderStatus, concat(tbl_customer.firstname, ' ' , tbl_customer.lastname) AS customerName, tbl_customer.address, tbl_customer.phone, 
                 tbl_userLocal.email, tbl_priceList.priceName, tbl_priceList.priceDesc, tbl_priceList.price AS hourlyPrice, concat(tbl_employee.firstname, ' ', 
                 tbl_employee.lastname) AS employeeName FROM tbl_orders INNER JOIN tbl_customer ON tbl_orders.customerId=tbl_customer.id INNER JOIN tbl_userLocal 
@@ -84,7 +85,7 @@ exports.updateById = ({ id, employeeId, orderStatus }) =>
 exports.getAll = () => 
     new Promise(async (resolve, reject) => {
         try {
-            let response = await conn.query(`SELECT tbl_orders.id AS orderId, tbl_orders.orderDate, tbl_orders.orderDuration, tbl_orders.totalPrice, 
+            let response = await conn.query(`SELECT tbl_orders.id AS orderId, tbl_orders.orderDate, tbl_orders.orderDuration, tbl_orders.location, tbl_orders.totalPrice, 
                 tbl_orders.notes, tbl_orders.orderStatus, concat(tbl_customer.firstname, ' ' , tbl_customer.lastname) AS customerName, tbl_customer.address, tbl_customer.phone, 
                 tbl_userLocal.email, tbl_priceList.priceName, tbl_priceList.priceDesc, tbl_priceList.price AS hourlyPrice, concat(tbl_employee.firstname, ' ', 
                 tbl_employee.lastname) AS employeeName FROM tbl_orders INNER JOIN tbl_customer ON tbl_orders.customerId=tbl_customer.id INNER JOIN tbl_userLocal 

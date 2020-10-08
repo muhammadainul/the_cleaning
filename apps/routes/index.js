@@ -42,7 +42,7 @@ router.post('/order/listOrderUser', [isSecured], [isVerified], orders.listOrderU
 router.post('/order/orderDetailUser', [isSecured], [isVerified], orders.orderDetailUser)
 
 // ORDERS ADMIN
-router.post('/admin/orderGetEmployee', orders.orderUpdateGetEmployee)
-router.post('/admin/getAllOrders', orders.getAllOrders)
+router.post('/admin/orderGetEmployee', [isSecured], [isVerified], [isAdmin], orders.orderUpdateGetEmployee)
+router.post('/admin/getAllOrders', [isSecured], [isVerified], [isAdmin], orders.getAllOrders)
 
 module.exports = router

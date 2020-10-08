@@ -6,9 +6,8 @@ const User = require('../queries/user')
 const PriceList = require('../queries/priceList')
 const Orders = require('../queries/orders')
 const Employee = require('../queries/employee')
-const { isEmpty, toInteger } = require('lodash')
+const { isEmpty, toInteger, forEach } = require('lodash')
 const moment = require('moment')
-// const { toInt } = require('validator').default
 
 async function orderNow (req, res, next) {
     let data = req.body
@@ -19,7 +18,9 @@ async function orderNow (req, res, next) {
             customerId,
             priceName,
             orderDate,
+            orderTime,
             orderDuration,
+            location,
             totalPrice,
             notes,
         } = req.body
@@ -28,27 +29,29 @@ async function orderNow (req, res, next) {
         const exists = await User.findById({ id })
         if (isEmpty(exists)) return res.send({ statusCode: 404, message: 'User not found.' })
         if (exists.id !== user.id) return res.send({ statusCode: 400, message: 'Not your account.' })
-
-        const priceListId = await PriceList.isExistsByName(priceName)
+        
+        const priceListId = await PriceList.isExistsByName({ priceName })
         if (isEmpty(priceListId)) return res.send({ statusCode: 404, message: 'Price list not found.' })
 
         let uniqid
         uniqid = new Puid()
-
+    
         const orders = await Orders.create({
-            id: uniqid.generate(),
-            customerId,
-            priceListId: priceListId.id,
-            orderDate,
-            orderDuration,
-            totalPrice,
-            orderStatus: 'Pesanan diproses',
-            notes,
+            id              : uniqid.generate(),
+            customerId      : customerId,
+            priceListId     : priceListId.id,
+            orderDate       : orderDate,
+            orderTime       : orderTime,
+            orderDuration   : orderDuration,
+            location        : location,
+            totalPrice      : totalPrice,
+            orderStatus     : 'Pesanan diproses',
+            notes           : notes
         })
         console.log('orders', orders)
 
         return res.send({ statusCode: 200, message: 'Successfully order.' })
-
+        
     } catch (error) {
         throw error
     }
@@ -81,6 +84,11 @@ async function orderDetailUser (req, res, next) {
     let data = req.body
     console.log('[TheCleaning] orderDetailUser', data)
     try {
+        const user = req.user
+        const exists = await User.findById({ id: user.id })
+        if (isEmpty(exists)) return res.send({ statusCode: 404, message: 'User not found.' })
+        if (exists.id !== user.id) return res.send({ statusCode: 400, message: 'Not your account.' })
+        
         const { id } = req.body
         if (isEmpty(id)) return res.send({ statusCode: 400, message: 'Id order must be exists.' })
 
@@ -116,7 +124,7 @@ async function orderUpdateGetEmployee (req, res, next) {
          })
         console.log('ordersUpdate', ordersUpdate)
 
-        return res.send({ statusCode: 200, message: 'Successfully get employee.' })
+        return res.send({ statusCode: 200, message: 'Successfully get employee.', data: ordersUpdate.affectedRows })
     } catch (error) {
         throw error
     }

@@ -3,7 +3,7 @@
 const { result, reject, isEmpty } = require('lodash')
 const _ = require('lodash')
 
-exports.isExistsByName = priceName =>
+exports.isExistsByName = ({ priceName }) =>
     new Promise(async (resolve, reject) => {
         try {
             let response = await conn.query(`SELECT * FROM tbl_priceList WHERE priceName='${priceName}'`, (err, result) => {
