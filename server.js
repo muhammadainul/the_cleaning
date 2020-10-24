@@ -2,7 +2,7 @@
 
 require('dotenv').config()
 
-const port = process.env.PORT || 3001
+const port = process.env.PORT || 3002
 const express = require('express')
 const passport = require('passport')
 const session = require('express-session')

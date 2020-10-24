@@ -1,54 +1,63 @@
 'use strict'
 
 const { isEmpty } = require('lodash')
+const debug = require('debug')
 
 exports.isExistsByUsername = username =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:isExistsByUsername')
+        log('[The_cleaning][user] isExistsByUsername', username)
         try {
             let response = await conn.query(`SELECT * FROM tbl_userLocal WHERE username='${username}'`, (err, result) => {
                 if (err) reject(err)
 
-                console.log('results', result)
+                log('results', result)
                 resolve(result)
             })
-            console.log('response', response)
+            log('response', response)
         } catch (error){
-            reject(error)
+            throw error
         }
     })
 
 exports.isExistsByEmail = email =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:isExistsByEmail')
+        log('[The_cleaning][user] isExistsByEmail', email)
         try {
             let response = await conn.query(`SELECT * FROM tbl_userLocal WHERE email='${email}'`, (err, result) => {
                 if (err) reject(err)
 
-                console.log('results', result)
+                log('results', result)
                 resolve(result)
             })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
-            reject(error)
+           throw error
         }
     })
 
 exports.isExistsByPhone = phone =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:isExistsByPhone')
+        log('[The_cleaning][user] isExistsByPhone', phone)
         try {
             let response = await conn.query(`SELECT * FROM tbl_customer WHERE phone='${phone}'`, (err, result) => {
                 if (err) reject(err)
 
-                console.log('results', result)
+                log('results', result)
                 resolve(result)
             })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
-            reject(error)
+           throw error
         }
     })
 
 exports.findByEmail = email  =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:findByEmail')
+        log('[The_cleaning][user] findByEmail', email)
         try {
             let response = await conn.query(`SELECT tbl_userLocal.email, tbl_userLocal.username, tbl_userLocal.password, tbl_userLocal.role,
                 tbl_userLocal.isVerified, tbl_userLocal.isLoggedIn, tbl_userLocal.userSessionId, tbl_customer.id, tbl_customer.firstname, tbl_customer.lastname, tbl_customer.phone, tbl_customer.address, 
@@ -61,11 +70,11 @@ exports.findByEmail = email  =>
 
                 Object.keys(result).forEach(function(key){
                     const row = result[key]
-                    console.log('row', row)
+                    log('row', row)
                     resolve(row)
                 })
             })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw (error)
         }
@@ -73,6 +82,8 @@ exports.findByEmail = email  =>
 
 exports.findById = ({ id }) =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:findById')
+        log('[The_cleaning][user] findById', id)
         try {
             let response = await conn.query(`SELECT * FROM tbl_customer WHERE id='${id}'`, (err, result) => {
                 if (err) throw err
@@ -81,11 +92,11 @@ exports.findById = ({ id }) =>
 
                 Object.keys(result).forEach(function(key){
                     const row = result[key]
-                    console.log('row', row)
+                    log('row', row)
                     resolve(row)
                 })
             })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw error
         }
@@ -93,15 +104,17 @@ exports.findById = ({ id }) =>
 
 exports.updateById = ({ id, firstname, lastname, phone, address, zipCode }) =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:updateById')
+        log('[The_cleaning][user] updateById', { id, firstname, lastname, phone, address, zipCode })
         try {
             let response = await conn.query(`UPDATE tbl_customer SET firstname='${firstname}', lastname='${lastname}', phone='${phone}', 
                     address='${address}', zipCode='${zipCode}' WHERE id='${id}'`, (err, result) => {
                         if (err) throw err
 
-                        console.log('result', result)
+                        log('result', result)
                         resolve(result)
                     })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw error
         }
@@ -109,15 +122,17 @@ exports.updateById = ({ id, firstname, lastname, phone, address, zipCode }) =>
 
 exports.updateUserLocal = ({  userLocalId, username, email, encryptedPassword }) =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:updateUserLocal')
+        log('[The_cleaning][user] updateUserLocal', { userLocalId, username, email, encryptedPassword })
         try {
             let response = await conn.query(`UPDATE tbl_userLocal SET username='${username}', email='${email}', password='${encryptedPassword}'
                     WHERE id='${userLocalId}'`, (err, result) => {
                         if (err) throw err
 
-                        console.log('result', result)
+                        log('result', result)
                         resolve(result)
                     })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw error
         }
@@ -125,14 +140,16 @@ exports.updateUserLocal = ({  userLocalId, username, email, encryptedPassword })
 
 exports.updateUser = ({ id, isLoggedIn }) =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:updateUser')
+        log('[The_cleaning][user] updateUser', { id, isLoggedIn })
         try {
             let response = await conn.query(`UPDATE tbl_userLocal SET isLoggedIn='${isLoggedIn}', lastActive=NOW() WHERE id='${id}'`, (err, result) => {
                 if (err) throw err
 
-                console.log('result', result)
+                log('result', result)
                 resolve(result)
             })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw(error)
         }
@@ -140,14 +157,16 @@ exports.updateUser = ({ id, isLoggedIn }) =>
 
 exports.updateUserLogin = ({ id, isLoggedIn, userSessionId }) =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:updateUserLogin')
+        log('[The_cleaning][user] updateUserLogin', { id, isLoggedIn, userSessionId })
         try {
             let response = await conn.query(`UPDATE tbl_userLocal SET isLoggedIn='${isLoggedIn}', userSessionId='${userSessionId}', lastActive=NOW() WHERE id='${id}'`, (err, result) => {
                 if (err) throw err
 
-                console.log('result', result)
+                log('result', result)
                 resolve(result)
             })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw(error)
         }
@@ -155,13 +174,15 @@ exports.updateUserLogin = ({ id, isLoggedIn, userSessionId }) =>
     
 exports.register = ({ id, firstname, lastname, phone, address, zipCode, userLocalId }) => 
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:register')
+        log('[The_cleaning][user] register', { id, firstname, lastname, phone, address, zipCode, userLocalId })
         try {
             let response = await conn.query(`INSERT INTO tbl_customer (id, firstname, lastname, phone, address, zipCode, userLocalId)
                     VALUES('${id}', '${firstname}', '${lastname}', '${phone}', '${address}', '${zipCode}', '${userLocalId}')`,
                     (err, result) => {
                         if (err) reject(err)
-                        console.log('err', err)
-                        console.log('results', result)
+                        log('err', err)
+                        log('results', result)
                         resolve(result)   
                     })
         } catch (error){
@@ -171,12 +192,14 @@ exports.register = ({ id, firstname, lastname, phone, address, zipCode, userLoca
 
 exports.addUserLocal = ({ id, email, username, password, role, isVerified, userTokenId }) =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:addUserLocal')
+        log('[The_cleaning][user] addUserLocal', { id, email, username, password, role, isVerified, userTokenId  })
         try {
             let response = await conn.query(`INSERT INTO tbl_userLocal (id, email, username, password, role, isVerified, userTokenId)
                     VALUES('${id}', '${email}', '${username}', '${password}', '${role}', '${isVerified}', '${userTokenId}')`, (err, result) => {
                         if (err) reject(err)
 
-                        console.log("result", result)
+                        log("result", result)
                         resolve(result)
                     })
             
@@ -187,14 +210,16 @@ exports.addUserLocal = ({ id, email, username, password, role, isVerified, userT
 
 exports.createTokenCode = ({ id, tokenCode }) => 
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:createTokenCode')
+        log('[The_cleaning][user] createTokenCode', { id, tokenCode })
         try {
             let response = await conn.query(`INSERT INTO tbl_userToken (id, tokenCode) VALUES('${id}', '${tokenCode}')`, (err, result) => {
                 if (err) throw err
 
-                console.log('result', result)
+                log('result', result)
                 resolve(result)
             })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw error
         }
@@ -202,6 +227,8 @@ exports.createTokenCode = ({ id, tokenCode }) =>
 
 exports.findToken = ({ tokenCode }) => 
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:findToken')
+        log('[The_cleaning][user] findToken', tokenCode)
         try {
             let response = await conn.query(`SELECT * FROM tbl_userToken INNER JOIN tbl_userLocal ON tbl_userToken.id=tbl_userLocal.userTokenId WHERE tbl_userToken.tokenCode='${tokenCode}'`, 
                     (err, result) => {
@@ -211,11 +238,11 @@ exports.findToken = ({ tokenCode }) =>
                         
                         Object.keys(result).forEach(function(key){
                             const row = result[key]
-                            console.log('row', row)
+                            log('row', row)
                             resolve(row)
                         })
                     })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw error
         }
@@ -223,15 +250,17 @@ exports.findToken = ({ tokenCode }) =>
 
 exports.verifiedUser = ({ userTokenId, isVerified }) =>
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:verifiedUser')
+        log('[The_cleaning][user] verifiedUser', { userTokenId, isVerified })
         try {
             let response = await conn.query(`UPDATE tbl_userLocal SET isVerified='${isVerified}' WHERE userTokenId='${userTokenId}'`, 
                     (err, result) => {
                         if (err) throw err
 
-                        console.log('result', result)
+                        log('result', result)
                         resolve(result)
                     })
-            console.log('response', response)
+            log('response', response)
         } catch (error) {
             throw error
         }
@@ -239,6 +268,8 @@ exports.verifiedUser = ({ userTokenId, isVerified }) =>
 
 exports.getDataCustomer =  data => 
     new Promise(async (resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:getDataCustomer')
+        log('[The_cleaning][user] getDataCustomer', data)
         try {
             let response = await conn.query(`SELECT tbl_customer.id, tbl_customer.firstname, tbl_customer.lastname,
                  tbl_userLocal.email, tbl_customer.phone, tbl_customer.address, tbl_customer.zipCode, tbl_userLocal.username,
@@ -247,10 +278,10 @@ exports.getDataCustomer =  data =>
                  ON tbl_customer.userLocalId=tbl_userLocal.id`, (err, result) => {
                 if (err) throw (err)
 
-                console.log("customer", result)
+                log("customer", result)
                 resolve(result)
             })
-            console.log('query', response)
+            log('query', response)
         } catch (error) {
             throw error
         }

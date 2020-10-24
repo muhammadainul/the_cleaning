@@ -16,7 +16,7 @@ async function orderNow (req, res, next) {
         const user = req.user
         let { 
             customerId,
-            priceName,
+            jobType,
             orderDate,
             orderTime,
             orderDuration,
@@ -30,8 +30,9 @@ async function orderNow (req, res, next) {
         if (isEmpty(exists)) return res.send({ statusCode: 404, message: 'User not found.' })
         if (exists.id !== user.id) return res.send({ statusCode: 400, message: 'Not your account.' })
         
-        const priceListId = await PriceList.isExistsByName({ priceName })
+        const priceListId = await PriceList.isExistsByName({ jobType })
         if (isEmpty(priceListId)) return res.send({ statusCode: 404, message: 'Price list not found.' })
+        console.log('picelistid', priceListId.idPriceJob)
 
         let uniqid
         uniqid = new Puid()
@@ -39,7 +40,7 @@ async function orderNow (req, res, next) {
         const orders = await Orders.create({
             id              : uniqid.generate(),
             customerId      : customerId,
-            priceListId     : priceListId.id,
+            priceListId     : priceListId.priceListId,
             orderDate       : orderDate,
             orderTime       : orderTime,
             orderDuration   : orderDuration,
@@ -51,7 +52,6 @@ async function orderNow (req, res, next) {
         console.log('orders', orders)
 
         return res.send({ statusCode: 200, message: 'Successfully order.' })
-        
     } catch (error) {
         throw error
     }

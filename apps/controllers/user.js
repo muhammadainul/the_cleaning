@@ -1,6 +1,7 @@
 'use strict'
 
 const { isEmpty } = require('lodash')
+const debug = require('debug')
 // const uniqid = require('uniqid')
 const passport = require('passport')
 const jwt = require('jsonwebtoken')
@@ -13,13 +14,14 @@ const { validationResult } = require('express-validator')
 const User = require('../queries/user')
 const Session = require('../queries/session')
 const { myConfig } = require('../config/config')
+const { toInt } = require('validator').default
 
 async function editProfile (req, res, next) {
     let data = req.body
-
+    let log = debug('the_cleaning:user:edifProfile')
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.send({ statusCode: 400, message: "Not a valid input!", error: errors })
-    console.log('[TheCleaning] editProfile', data)
+    log('[TheCleaning] editProfile', data)
     try {
         const user = req.user
         let {
@@ -35,7 +37,7 @@ async function editProfile (req, res, next) {
             repassword
         } = req.body
 
-        console.log('user', user)
+        log('user', user)
         const exists = await User.findById({ id })
         if (isEmpty(exists)) return res.send({ statusCode: 404, message: 'User not found.' })
         if (exists.id !== user.id) return res.send({ statusCode: 400, message: 'Not your account.' }) 
@@ -48,7 +50,7 @@ async function editProfile (req, res, next) {
             address,
             zipCode
         })
-        console.log('updateCustomer', updateCustomer)
+        log('updateCustomer', updateCustomer)
 
         const userLocalId = exists.userLocalId
         const encryptedPassword = bcrypt.hashSync(password, salt)
@@ -58,7 +60,7 @@ async function editProfile (req, res, next) {
             email,
             encryptedPassword 
         })
-        console.log('updateUserLocal', updateUserLocal)
+        log('updateUserLocal', updateUserLocal)
 
         return res.send({ statusCode: 200, data: updateCustomer })
     } catch (error) {
@@ -67,11 +69,48 @@ async function editProfile (req, res, next) {
 }
 
 async function getAllCustomer (req, res, next) {
+    let log = debug('the_cleaning:user:getAllCustomer')
+    let data = req.body
+    log('[The_cleaning][user] getAllCustomer', data)
     try {
-        let result = await User.getDataCustomer()
-        console.log('results', result)
+        const { start, length, draw } = req.body
+
+        const offset = toInt(start)
+        const numOfItems = toInt(length)
         
-        return res.send({ statusCode: 200, data: result })
+        const users = await User.getDataCustomer()
+        if (isEmpty(users)) {
+            return res.send({
+                statusCode: 200,
+                body: {
+                    recordsFiltered: 0,
+                    recordsTotal: 0,
+                    data: [],
+                    draw
+                }
+
+            })
+        }
+
+        const data = users
+            .slice(offset, offset + numOfItems)
+            .map(users => {
+                const { id, ...userList } = users
+                return {
+                    id,
+                    ...userList
+                }
+            })
+        
+        return res.send({ 
+            statusCode: 200, 
+            body: {
+                recordsFiltered: data.length,
+                recordsTotal: data.length,
+                data: data,
+                draw
+            }
+        })
     } catch (error) {
         throw error
     }

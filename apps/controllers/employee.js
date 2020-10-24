@@ -1,12 +1,14 @@
 'use strict'
 
 const { isEmpty } = require('lodash')
+const debug = require('debug')
 const Puid = require('puid')
 const { validationResult } = require('express-validator')
 const fs = require('fs')
 const Employee = require('../queries/employee')
 const Files = require('../queries/files')
 const path = require('path')
+const { toInt } = require('validator').default
 
 async function addEmployee (req, res, next) {
     let data = req.body
@@ -135,12 +137,46 @@ async function deleteEmployee (req, res, next) {
 
 async function getAllEmployee (req, res, next) {
     let data = req.body
-    console.log('[TheCleaning] getAll', data)
+    let log= debug('the_cleaning:employee:getAllEmployee')
+    log('[TheCleaning][employee] getAllEmployee', data)
     try {
+        const { start, length, draw } = req.body
+        const offset = toInt(start)
+        const numOfItems = toInt(length)
+
         let result = await Employee.findAll()
         console.log('result', result)
+        if (isEmpty(result)) {
+            return res.send({
+                statusCode: 200,
+                body: {
+                    recordsFiltered: 0,
+                    recordsTotal: 0,
+                    data: [],
+                    draw
+                }
+            })
+        }  
+        
+        const data = result
+            .slice(offset, offset + numOfItems)
+            .map(result => {
+                const { id, ...employeeList } = result
+                return {
+                    id,
+                    ...employeeList
+                }
+            })
 
-        return res.send({ statusCode: 200, data: result[0] })
+        return res.send({ 
+            statusCode: 200, 
+            body: { 
+                recordsFiltered: data.length,
+                recordsTotalL: data.length,
+                data: data,
+                draw
+            }
+        })
     } catch (error) {
         throw error
     }

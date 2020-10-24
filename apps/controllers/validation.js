@@ -53,14 +53,14 @@ let validatePriceName = [
         .withMessage("Price name must be at least 5 characters.")
 ]
 
-let validatePriceDesc = [
-    body("priceDesc")
-        .exists()
-        .trim()
-        .escape()
-        .isLength({ min: 10 })
-        .withMessage("Price description must be at least 10 characters.")
-]
+// let validatePriceDesc = [
+//     body("priceDesc")
+//         .exists()
+//         .trim()
+//         .escape()
+//         .isLength({ min: 10 })
+//         .withMessage("Price description must be at least 10 characters.")
+// ]
 
 let validatePrice = [
     body("price")
@@ -74,13 +74,13 @@ let validatePrice = [
         .withMessage("Price must be at least 5 numeric.")
 ]
 
-let validateDuration = [
-    body("duration")
-        .exists()
-        .trim()
-        .isInt()
-        .withMessage("Duration must be a number.")
-]
+// let validateDuration = [
+//     body("duration")
+//         .exists()
+//         .trim()
+//         .isInt()
+//         .withMessage("Duration must be a number.")
+// ]
 
 exports.register = [validateUsername, validateEmail, validatePhone, validatePassword("password")]
-exports.price = [validatePriceName, validatePriceDesc, validatePrice, validateDuration]
+exports.price = [validatePriceName, validatePrice]

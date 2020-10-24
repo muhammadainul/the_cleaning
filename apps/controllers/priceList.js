@@ -1,19 +1,22 @@
 'use strict'
 
-const { isEmpty } = require('lodash')
+const { isEmpty, toInteger } = require('lodash')
 const { validationResult } = require('express-validator')
+const debug = require('debug')
 const Puid = require('puid')
+const { toInt } = require('validator').default
 const Price = require('../queries/priceList')
+const Pricejob = require('../queries/priceJob')
 
 async function addPriceList (req, res, next) {
     let data = req.body
-
+    let log = debug('webadmin:pricelist:addpPriceList')
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.send({ statusCode: 400, message: "Not a valid input.", error: errors })
 
-    console.log('[TheCleaning] addPriceList', data)
+    log('[TheCleaning] addPriceList', data)
     try {
-        let { priceName, priceDesc, price, duration } = req.body
+        let { priceName, jobType, price, unit } = req.body
 
         const exists = await Price.isExistsByName(priceName)
         if (!isEmpty(exists)) return res.send({ statusCode: 400, message: "Price name already available."})
@@ -21,14 +24,22 @@ async function addPriceList (req, res, next) {
         let uniqid
         uniqid = new Puid()
 
+        const idPriceJob = uniqid.generate()
+        const priceJobType = await Pricejob.create({ 
+            id: idPriceJob,
+            jobType,
+            price, 
+            unit
+        })
+
+        log('priceJobType', priceJobType.id)
+
         let result = await Price.create({
             id: uniqid.generate(),
             priceName,
-            priceDesc, 
-            price,
-            duration
+            idPriceJob: idPriceJob
         })
-        console.log('result', result)
+        log('result', result)
         
         return res.send({ statusCode: 200, message: "Price list has been successfully added." })
     } catch (error) {
@@ -42,21 +53,18 @@ async function editPriceList (req, res, next) {
     const errors = validationResult(req)
     if (!errors.isEmpty()) return res.send({ statusCode: 400, message: "Not a valid input.", error: errors })
 
-    console.log('[TheCleaning] editPriceList', data)
+    log('[TheCleaning] editPriceList', data)
     try {
-        let { id, priceName, priceDesc, price, duration } = req.body
+        const { id, priceName, jobType, price, unit } = req.body
 
         const exists = await Price.findById(id)
         if (isEmpty(exists)) return res.send({ statusCode: 404, message: "Price list not found." })
+        log('exists', exists)
 
-        const edited = await Price.updateById({
-            id,
-            priceName,
-            priceDesc, 
-            price,
-            duration
-        })
-        console.log('result', edited)
+        const edited = await Price.updateByIdPriceListJob({ id, priceName })
+        const editedPriceJob = await Price.updateById({ id: exists.idPriceList, jobType, price, unit })
+        log('editedPricejob', editedPriceJob)
+        log('result', edited)
         
         return res.send({ statusCode: 200, message: "Price list has been successfully edited." })
     } catch (error) {
@@ -66,13 +74,14 @@ async function editPriceList (req, res, next) {
 
 async function deletePriceList (req, res, next) {
     let { id } = req.body
-    console.log('[TheCleaning] deletePriceList', id)
+    log('[TheCleaning] deletePriceList', id)
     try {
         const exists = await Price.findById(id)
         if (isEmpty(exists)) return res.send({ statusCode: 404, message: "Price list not found." })
 
         const deleted = await Price.deleteById(id)
-        console.log('deleted', deleted)
+        const deletedPriceJob = await Price.deleteByIdPriceJob({ id: exists.idPriceList })
+        log('deleted', deleted)
 
         return res.send({ statusCode: 200, message: "Price list has been successfully deleted." })
     } catch (error) {
@@ -82,12 +91,46 @@ async function deletePriceList (req, res, next) {
 
 async function getAllPriceList (req, res, next) {
     let data = req.body
-    console.log('[TheCleaning] getAllData', data)
+    let log = debug('the_cleaning:priceList:getAllPriceList')
+    log('[TheCleaning][pricelist] getAllPriceList', data)
     try {
-        let result = await Price.findAll()
-        console.log('result', result)
+        const { start, length, draw } = req.body
+        const offset = toInt(start)
+        const numOfItems = toInt(length)
 
-        return res.send({ statusCode: 200, data: result })
+        const result = await Price.findAll()
+        log('result', result)
+        if (isEmpty(result)) {
+            return res.send({ 
+                statusCode: 200,
+                body: {
+                    recordsFiltered: 0,
+                    recordsTotal: 0,
+                    data: [],
+                    draw
+                }
+            })
+        }
+
+        const data = result
+            .slice(offset, offset + numOfItems)
+            .map(result => {
+                const { id, ...priceList } = result
+                return {
+                    id,
+                    ...priceList
+                }
+            })
+
+        return res.send({ 
+            statusCode: 200, 
+            body: {
+                recordsFiltered: data.length,
+                recordsTotal: data.length,
+                data: data,
+                draw
+            } 
+        })
     } catch (error) {
         throw error
     }

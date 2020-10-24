@@ -20,7 +20,7 @@ router.post('/user/login', index.login)
 router.post('/user/logout', [isSecured], [isVerified], index.logout)
 
 // USER
-router.post('/user/getAll', [isSecured], [isVerified], user.getAllCustomer)
+router.post('/admin/getAllUser', [isSecured], [isVerified], [isAdmin], user.getAllCustomer)
 router.post('/user/getAllPriceList', price.getAllPriceList)
 router.post('/user/update', [isSecured], [isVerified], [validate.register], user.editProfile)
 
@@ -31,10 +31,10 @@ router.post('/admin/deleteEmployee', [isSecured], [isVerified], [isAdmin], emplo
 router.post('/admin/getAllEmployee', [isSecured], [isVerified], [isAdmin], employee.getAllEmployee)
 
 // PRICE LIST
-router.post('/admin/addPriceList', [isSecured], [isVerified], [isAdmin], [validate.price], price.addPriceList)
-router.post('/admin/editPriceList', [isSecured], [isVerified], [isAdmin], [validate.price], price.editPriceList)
-router.post('/admin/deletePriceList', [isSecured], [isVerified], [isAdmin], price.deletePriceList)
-router.post('/admin/getAllPriceList', [isSecured], [isVerified], [isAdmin], price.getAllPriceList)
+router.post('/admin/addPriceList',  [validate.price], price.addPriceList)
+router.post('/admin/editPriceList', [validate.price], price.editPriceList)
+router.post('/admin/deletePriceList', price.deletePriceList)
+router.post('/admin/getAllPriceList', price.getAllPriceList)
 
 // ORDERS
 router.post('/order/orderNow', [isSecured], [isVerified], orders.orderNow)
@@ -43,6 +43,6 @@ router.post('/order/orderDetailUser', [isSecured], [isVerified], orders.orderDet
 
 // ORDERS ADMIN
 router.post('/admin/orderGetEmployee', [isSecured], [isVerified], [isAdmin], orders.orderUpdateGetEmployee)
-router.post('/admin/getAllOrders', [isSecured], [isVerified], [isAdmin], orders.getAllOrders)
+router.post('/admin/getAllOrders', orders.getAllOrders)
 
 module.exports = router

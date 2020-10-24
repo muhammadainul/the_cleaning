@@ -2,20 +2,23 @@
 
 const { result, reject, isEmpty } = require('lodash')
 const _ = require('lodash')
+const { price } = require('../controllers/validation')
 
-exports.isExistsByName = ({ priceName }) =>
+exports.isExistsByName = ({ jobType }) =>
     new Promise(async (resolve, reject) => {
         try {
-            let response = await conn.query(`SELECT * FROM tbl_priceList WHERE priceName='${priceName}'`, (err, result) => {
-                if (err) throw err
+            let response = await conn.query(`select tbl_pricelistjob.id, tbl_pricelistjob.jobType, tbl_pricelistjob.price, tbl_pricelistjob.unit, 
+                tbl_pricelist.priceName, tbl_pricelist.id as priceListId, tbl_pricelist.idPriceJob from tbl_pricelistjob join tbl_pricelist on tbl_pricelistjob.id=tbl_pricelist.idPriceJob
+                where jobType='${jobType}'`, (err, result) => {
+                    if (err) throw err
 
-                if (isEmpty(result)) resolve(result)
+                    if (isEmpty(result)) resolve(result)
 
-                Object.keys(result).forEach(function(key){
-                   const row = result[key]
-                   console.log('row', row)
-                   resolve(row)
-               })
+                    Object.keys(result).forEach(function(key){
+                    const row = result[key]
+                    console.log('row', row)
+                    resolve(row)
+                })
             })
             console.log('response', response)
         } catch (error) {
@@ -25,12 +28,16 @@ exports.isExistsByName = ({ priceName }) =>
 
 exports.findById = id =>
     new Promise(async (resolve, reject) => {
-        try {
-            let response = await conn.query(`SELECT * FROM tbl_priceList WHERE id='${id}'`, (err, result) => {
+        try {   
+            const query = `select distinct tbl_pricelist.priceName, tbl_pricelist.id, tbl_pricelistjob.id as idPriceList, tbl_priceList.createdAt, tbl_pricelist.updatedAt, tbl_pricelistjob.jobType, tbl_pricelistjob.price, tbl_pricelistjob.unit
+                from tbl_pricelist join tbl_pricelistjob on tbl_pricelist.idPriceJob=tbl_pricelistjob.id where tbl_pricelist.id='${id}'`
+            let response = await conn.query(query, (err, result) => {
                 if (err) throw err
 
-                console.log(result)
-                resolve(result)
+                if (isEmpty(result)) resolve(result)
+
+                console.log('results', result[0])
+                resolve(result[0])
             })
             console.log('response', response)
         } catch (error) {
@@ -38,11 +45,10 @@ exports.findById = id =>
         }
     })
 
-exports.create = ({ id, priceName, priceDesc, price, duration }) =>
+exports.create = ({ id, priceName, idPriceJob }) =>
     new Promise(async (resolve, reject) => {
         try {
-            let response = await conn.query(`INSERT INTO tbl_priceList (id, priceName, priceDesc, price, duration) VALUES('${id}', '${priceName}', 
-                '${priceDesc}', '${price}', '${duration}')`, (err, result) => {
+            let response = await conn.query(`INSERT INTO tbl_priceList (id, priceName, idPriceJob) VALUES('${id}', '${priceName}', '${idPriceJob}')`, (err, result) => {
                     if (err) throw err
 
                     console.log('result', result)
@@ -54,11 +60,25 @@ exports.create = ({ id, priceName, priceDesc, price, duration }) =>
         }
     })
 
-exports.updateById = ({ id, priceName, priceDesc, price, duration }) =>
+exports.updateById = ({ id, jobType, price, unit }) =>
     new Promise(async (resolve, reject) => {
         try {
-            let response = await conn.query(`UPDATE tbl_priceList SET priceName='${priceName}', priceDesc='${priceDesc}', price='${price}', 
-                duration='${duration}' WHERE id='${id}'`, (err, result) => {
+            let response = await conn.query(`update tbl_pricelistjob set jobType='${jobType}', price='${price}', unit='${unit}' where id='${id}'`, (err, result) => {
+                    if (err) throw err
+
+                    console.log('result', result)
+                    resolve(result)
+                })
+            console.log('response', response)
+        } catch (error) {
+            throw error
+        }
+    })
+
+exports.updateByIdPriceListJob = ({ id, priceName }) =>
+    new Promise(async (resolve, reject) => {
+        try {
+            let response = await conn.query(`update tbl_pricelist set priceName='${priceName}' where idPriceJob='${id}'`, (err, result) => {
                     if (err) throw err
 
                     console.log('result', result)
@@ -85,10 +105,27 @@ exports.deleteById = id =>
         }
     })
 
+exports.deleteByIdPriceJob = ({ id }) =>
+    new Promise(async(resolve, reject) => {
+        try {
+            const query = `delete from tbl_pricelistjob where id='${id}'`
+            let response = await conn.query(query, (err, result) => {
+                if (err) throw err
+                
+                console.log('results', result)
+                resolve(result)
+            })
+        } catch (error) {
+            throw error
+        }
+    })
+
 exports.findAll = () =>
     new Promise(async (resolve, reject) => {
         try {
-            let response = await conn.query(`SELECT id, priceName, priceDesc, price, duration, createdAt, updatedAt FROM tbl_priceList`, (err, result) => {
+            const query = `select distinct tbl_pricelist.priceName, tbl_pricelist.id as idPriceList, tbl_priceList.createdAt, tbl_pricelistjob.jobType, tbl_pricelistjob.price, tbl_pricelistjob.unit from tbl_pricelist
+                    join tbl_pricelistjob on tbl_pricelist.idPriceJob=tbl_pricelistjob.id`
+            let response = await conn.query(query, (err, result) => {
                 if (err) throw err
                 
                 if (isEmpty(result)) resolve(result)

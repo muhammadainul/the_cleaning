@@ -154,6 +154,7 @@ async function login (req, res, next) {
         let passwordValid = bcrypt.compare(password, userFound.password, function (err, result){
             if (err) throw err
 
+            console.log('passwordValid', passwordValid)
             console.log('result', result)
             if (!result) return res.send({ statusCode: 400, message: "Invalid password! Please try again." })
 
