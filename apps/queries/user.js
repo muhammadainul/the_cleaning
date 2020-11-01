@@ -1,6 +1,6 @@
 'use strict'
 
-const { isEmpty } = require('lodash')
+const { isEmpty, reject } = require('lodash')
 const debug = require('debug')
 
 exports.isExistsByUsername = username =>
@@ -54,10 +54,10 @@ exports.isExistsByPhone = phone =>
         }
     })
 
-exports.findByEmail = email  =>
+exports.findByEmail = (email, password)  =>
     new Promise(async (resolve, reject) => {
         let log = debug('the_cleaning:user:queries:findByEmail')
-        log('[The_cleaning][user] findByEmail', email)
+        log('[The_cleaning][user] findByEmail', { email, password })
         try {
             let response = await conn.query(`SELECT tbl_userLocal.email, tbl_userLocal.username, tbl_userLocal.password, tbl_userLocal.role,
                 tbl_userLocal.isVerified, tbl_userLocal.isLoggedIn, tbl_userLocal.userSessionId, tbl_customer.id, tbl_customer.firstname, tbl_customer.lastname, tbl_customer.phone, tbl_customer.address, 
@@ -80,7 +80,7 @@ exports.findByEmail = email  =>
         }
     })
 
-exports.findById = ({ id }) =>
+exports.findById = (id) =>
     new Promise(async (resolve, reject) => {
         let log = debug('the_cleaning:user:queries:findById')
         log('[The_cleaning][user] findById', id)
@@ -115,6 +115,39 @@ exports.updateById = ({ id, firstname, lastname, phone, address, zipCode }) =>
                         resolve(result)
                     })
             log('response', response)
+        } catch (error) {
+            throw error
+        }
+    })
+
+exports.deleteById = (id) =>
+    new Promise(async(resolve, reject) => {
+        let log = debug('the_cleaning:user:queries:deleteById')
+        log('[The_cleaning][user] deleteByid', id)
+        try {
+            let response = await conn.query(`DELETE FROM tbl_customer WHERE id='${id}'`, (err, result) => {
+                if (err) throw err
+
+                log('results', result)
+                resolve(result)
+            })
+            log('response', response)
+        } catch (error) {
+            throw error
+        }
+    })
+
+exports.deleteByUserlocalId = ({ userLocalId }) =>
+    new Promise(async(resolve, rejct) => {
+        let log = debug('the_cleaning:user:queries:deleteByUserlocalId')
+        log('[The_cleaning][user][Query] deletByUserlocalid', userLocalId)
+        try {
+            let response = await conn.query(`DELETE FROM tbl_userlocal WHERE id='${userLocalId}'`, (err, result) => {
+                if (err) throw err
+
+                log('results', result)
+                resolve(result)
+            })
         } catch (error) {
             throw error
         }

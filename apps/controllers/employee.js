@@ -22,7 +22,7 @@ async function addEmployee (req, res, next) {
         const checkPhone = await Employee.isExistsByPhone({ phone: data.phone })
         if (!isEmpty(checkPhone)) return res.send({ statusCode: 400, message: "Phone already used." })
 
-        if (files == undefined) return res.send({ statusCode: 400, message: 'Please select file to upload.' })
+        // if (files == undefined) return res.send({ statusCode: 400, message: 'Please select file to upload.' })
         
         let uniqid
         uniqid = new Puid()
@@ -48,7 +48,7 @@ async function addEmployee (req, res, next) {
         const addImageFile = await Files.create(imageFile)
         console.log('addImageFile', addImageFile)
 
-        return res.send({ statusCode: 200, message: "Employee data has been successfully added." })
+        return res.send({ statusCode: 200, data: imageFile })
 
     } catch (error) {
         throw error
@@ -135,6 +135,21 @@ async function deleteEmployee (req, res, next) {
     }
 }
 
+async function getEmployeeById (req, res, next) {
+    let log = debug('the_cleaning:employee:getEmployeeById')
+    let data = req.body
+    log('[TheCleaning][employee] getEmployeeById', data)
+    try {   
+        const { id } = req.body
+        const result = await Employee.findById({ id })
+        if (isEmpty(result)) return res.send({ status_code: 404, message: "Employee not found." })
+
+        return res.send({ statusCode: 200, data: result })
+    } catch (error) {
+        throw error
+    }
+}
+
 async function getAllEmployee (req, res, next) {
     let data = req.body
     let log= debug('the_cleaning:employee:getAllEmployee')
@@ -202,5 +217,6 @@ module.exports = {
     addEmployee,
     editEmployee,
     deleteEmployee,
+    getEmployeeById,
     getAllEmployee
 }

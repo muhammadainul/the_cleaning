@@ -1,6 +1,6 @@
 'use strict'
 
-const { isEmpty, toInteger } = require('lodash')
+const { isEmpty, toInteger, uniq } = require('lodash')
 const { validationResult } = require('express-validator')
 const debug = require('debug')
 const Puid = require('puid')
@@ -18,30 +18,21 @@ async function addPriceList (req, res, next) {
     try {
         let { priceName, jobType, price, unit } = req.body
 
-        const exists = await Price.isExistsByName(priceName)
-        if (!isEmpty(exists)) return res.send({ statusCode: 400, message: "Price name already available."})
+        const exists = await Pricejob.isExistsByName(priceName)
+        if (!isEmpty(exists)) return res.send({ statusCode: 400, message: "Price name already exists." })
 
         let uniqid
-        uniqid = new Puid()
+        uniqid = new Puid() 
 
-        const idPriceJob = uniqid.generate()
-        const priceJobType = await Pricejob.create({ 
-            id: idPriceJob,
+        const created = await Pricejob.create({ 
+            id: uniqid.generate(),
             jobType,
             price, 
             unit
         })
-
-        log('priceJobType', priceJobType.id)
-
-        let result = await Price.create({
-            id: uniqid.generate(),
-            priceName,
-            idPriceJob: idPriceJob
-        })
-        log('result', result)
+        log('created', created)
         
-        return res.send({ statusCode: 200, message: "Price list has been successfully added." })
+        return res.send({ statusCode: 200, message: "Price list has been successfully added.", body: created })
     } catch (error) {
         throw error
     }
@@ -55,18 +46,16 @@ async function editPriceList (req, res, next) {
 
     log('[TheCleaning] editPriceList', data)
     try {
-        const { id, priceName, jobType, price, unit } = req.body
+        const { id, jobType, price, unit } = req.body
 
-        const exists = await Price.findById(id)
+        const exists = await Pricejob.findById(id)
         if (isEmpty(exists)) return res.send({ statusCode: 404, message: "Price list not found." })
         log('exists', exists)
 
-        const edited = await Price.updateByIdPriceListJob({ id, priceName })
-        const editedPriceJob = await Price.updateById({ id: exists.idPriceList, jobType, price, unit })
-        log('editedPricejob', editedPriceJob)
+        const edited = await Pricejob.updateById({ id, jobType, price, unit })
         log('result', edited)
         
-        return res.send({ statusCode: 200, message: "Price list has been successfully edited." })
+        return res.send({ statusCode: 200, message: "Price list has been successfully edited.", body: edited })
     } catch (error) {
         throw error
     }
@@ -76,14 +65,30 @@ async function deletePriceList (req, res, next) {
     let { id } = req.body
     log('[TheCleaning] deletePriceList', id)
     try {
-        const exists = await Price.findById(id)
+        const exists = await Pricejob.findById(id)
         if (isEmpty(exists)) return res.send({ statusCode: 404, message: "Price list not found." })
 
-        const deleted = await Price.deleteById(id)
-        const deletedPriceJob = await Price.deleteByIdPriceJob({ id: exists.idPriceList })
+        const deleted = await Pricejob.deleteById(id)
         log('deleted', deleted)
 
-        return res.send({ statusCode: 200, message: "Price list has been successfully deleted." })
+        return res.send({ statusCode: 200, message: "Price list has been successfully deleted.", body: deleted })
+    } catch (error) {
+        throw error
+    }
+}
+
+async function getPricelistById (req, res, next) {
+    let log = debug('the_cleaning:pricelist:getPricelistById')
+    let data = req.body
+    log('[webadmin][pricelist] getPricelistById', data)
+    try {
+        const { id } = req.body
+
+        const result = await Pricejob.findById(id)
+        log('result', result)
+        if (isEmpty(result)) return res.send({ status_code: 404, message: "Price list not found." })
+
+        return res.send({ statusCode: 200, data: result })
     } catch (error) {
         throw error
     }
@@ -98,7 +103,7 @@ async function getAllPriceList (req, res, next) {
         const offset = toInt(start)
         const numOfItems = toInt(length)
 
-        const result = await Price.findAll()
+        const result = await Pricejob.findAll()
         log('result', result)
         if (isEmpty(result)) {
             return res.send({ 
@@ -140,5 +145,6 @@ module.exports = {
     addPriceList,
     editPriceList,
     deletePriceList,
+    getPricelistById,
     getAllPriceList
 }

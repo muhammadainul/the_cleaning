@@ -99,8 +99,8 @@ async function register (req, res, next){
         transporter.sendMail(mailOptions, function (err){
             if (err) return res.send({ statusCode: 500, error: err })
 
-            const token = Token.createEvent()
-            console.log('token', token)
+            // const token = Token.createEvent()
+            // console.log('token', token)
             
             return res.send({ statusCode: 200, message: "Verification email has been send to " + userLocal.email + "." })
         })
@@ -145,9 +145,9 @@ async function login (req, res, next) {
     try {
         let { email, password } = req.body
 
-        const userFound = await User.findByEmail(email)
+        const userFound = await User.findByEmail(email, password)
         console.log('userfound', userFound)
-        if (isEmpty(userFound)) return res.send({ statusCode: 400, message: "User not found! Please try again." })
+        if (isEmpty(userFound)) return res.send({ statusCode: 400, message: "User not found! Please try again.", data: [] })
 
         if (!userFound.isVerified) return res.send({ statusCode: 400, message: "Your account has not been verified." })
 
@@ -156,7 +156,7 @@ async function login (req, res, next) {
 
             console.log('passwordValid', passwordValid)
             console.log('result', result)
-            if (!result) return res.send({ statusCode: 400, message: "Invalid password! Please try again." })
+            if (!result) return res.send({ statusCode: 400, message: "Invalid password! Please try again.", })
 
             console.log('email', userFound.email)
             const createAccessToken = jwt.sign({ id: userFound.id, email: userFound.email }, myConfig.sessionSecret, { expiresIn: myConfig.expiredSessionTime })
@@ -196,7 +196,6 @@ async function login (req, res, next) {
 
             return res.send({
                 statusCode: 200, 
-                message: "Login Success.", 
                 accessToken: createAccessToken,
                 refreshToken: createRefreshToken,
                 data: userFound 
@@ -205,6 +204,10 @@ async function login (req, res, next) {
     } catch (error) {
         throw (error)
     }
+}
+
+async function loginAdmin (req, res, next) {
+    
 }
 
 async function logout (req, res, next) {

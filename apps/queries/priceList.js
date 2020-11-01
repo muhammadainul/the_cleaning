@@ -8,8 +8,7 @@ exports.isExistsByName = ({ jobType }) =>
     new Promise(async (resolve, reject) => {
         try {
             let response = await conn.query(`select tbl_pricelistjob.id, tbl_pricelistjob.jobType, tbl_pricelistjob.price, tbl_pricelistjob.unit, 
-                tbl_pricelist.priceName, tbl_pricelist.id as priceListId, tbl_pricelist.idPriceJob from tbl_pricelistjob join tbl_pricelist on tbl_pricelistjob.id=tbl_pricelist.idPriceJob
-                where jobType='${jobType}'`, (err, result) => {
+                from tbl_pricelistjob where jobType='${jobType}'`, (err, result) => {
                     if (err) throw err
 
                     if (isEmpty(result)) resolve(result)

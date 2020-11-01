@@ -40,7 +40,7 @@ async function orderNow (req, res, next) {
         const orders = await Orders.create({
             id              : uniqid.generate(),
             customerId      : customerId,
-            priceListId     : priceListId.priceListId,
+            priceListId     : priceListId.id,
             orderDate       : orderDate,
             orderTime       : orderTime,
             orderDuration   : orderDuration,
@@ -177,6 +177,26 @@ async function getAllOrders (req, res, next) {
     }
 }
 
+async function detailOrder (req, res, next) {
+    const data = req.body
+    console.log('[TheCleaning] orderDetail', data)
+    try {
+        const { id } = req.body
+        if (isEmpty(id)) return res.send({ statusCode: 400, message: 'Id order must be exists.' })
+
+        const date = new Date()
+        const result = await Orders.findById({ 
+            id,
+         })
+        console.log('result', result)
+        if (isEmpty(result)) return res.send({ statusCode: 404, message: 'Order not found.' })
+
+        return res.send({ statusCode: 200, data: result })
+    } catch (error) {
+        throw error
+    }
+}
+
 function today () {
     return moment(Date.now()).format()
 }
@@ -186,5 +206,6 @@ module.exports = {
     listOrderUser,
     orderDetailUser,
     orderUpdateGetEmployee,
-    getAllOrders
+    getAllOrders,
+    detailOrder
 }

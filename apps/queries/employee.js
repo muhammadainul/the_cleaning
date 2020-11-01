@@ -40,7 +40,11 @@ exports.findById = ({ id }) =>
                 if (err) throw err
 
                 console.log('results', result)
-                resolve(result)
+                Object.keys(result).forEach(function(key){
+                    const row = result[key]
+                    console.log('row', row)
+                    resolve(row)
+                })
             })
             console.log('response', response)
         } catch (error) {
@@ -52,7 +56,7 @@ exports.findAll = () =>
     new Promise(async (resolve, reject) => {
         try {
             let response = await conn.query(`SELECT tbl_employee.id, tbl_employee.firstname, tbl_employee.lastname, tbl_employee.phone, tbl_employee.address, 
-                    tbl_employee.createdAt, tbl_employee.updatedAt, tbl_files.data FROM tbl_employee INNER JOIN tbl_files 
+                    tbl_employee.createdAt, tbl_employee.updatedAt, tbl_files.data FROM tbl_employee LEFT JOIN tbl_files 
                     ON tbl_files.employeeId=tbl_employee.id`, (err, result) => {
                         if (err) throw err
 

@@ -38,7 +38,7 @@ async function editProfile (req, res, next) {
         } = req.body
 
         log('user', user)
-        const exists = await User.findById({ id })
+        const exists = await User.findById(id)
         if (isEmpty(exists)) return res.send({ statusCode: 404, message: 'User not found.' })
         if (exists.id !== user.id) return res.send({ statusCode: 400, message: 'Not your account.' }) 
 
@@ -116,7 +116,30 @@ async function getAllCustomer (req, res, next) {
     }
 }
 
+async function deleteCustomer (req, res, next) {
+    let log = debug('the_cleaning:customer:deleteCustomer')
+    let data = req.body
+    log('[the_cleaning][customer] deleteCustomer', data)
+    try {
+        const id = data.id
+        const exists = await User.findById(id)
+        if (isEmpty(exists)) return res.send({ statusCode: 404, message: 'User not found.' })
+
+        const deleteUserLocal = await User.deleteByUserlocalId({ userLocalId: exists.userLocalId })
+        log('deleteUserLocal', deleteUserLocal)
+        const deleted = await User.deleteById(id)
+        if (deleted) {
+            return res.send({ statusCode: 200, message: 'Customer has been successfully deleted.', body: deleted })
+        } else {
+            return res.send({ statusCode: 400, message: 'Failed to delete.' })
+        }
+    } catch (error) {
+        throw error
+    }
+}
+
 module.exports = {
     editProfile,
-    getAllCustomer        
+    getAllCustomer,
+    deleteCustomer        
 }
